@@ -7,65 +7,56 @@ Original file is located at
     https://colab.research.google.com/gist/A-Yuki-A/48f8642709f70ca10edaa04c66fbab0c/tango.ipynb
 """
 
-import ipywidgets as widgets
-from IPython.display import display
+import tkinter as tk
 import random
 
-# サンプルデータ
+# 単語リストと意味
 words = [
-    {"word": "apple", "meaning": "A fruit", "importance": 5, "learned": False},
-    {"word": "banana", "meaning": "Another fruit", "importance": 3, "learned": False},
-    {"word": "cat", "meaning": "A small animal", "importance": 4, "learned": False},
-    {"word": "dog", "meaning": "A domesticated animal", "importance": 2, "learned": False},
-    {"word": "elephant", "meaning": "A large animal", "importance": 1, "learned": False},
+    ("Apple", "リンゴ"),
+    ("Banana", "バナナ"),
+    ("Cat", "ネコ"),
+    ("Dog", "イヌ"),
+    ("Elephant", "ゾウ"),
+    ("Fish", "サカナ"),
+    ("Grape", "ブドウ"),
+    ("House", "イエ"),
+    ("Ice", "コオリ"),
+    ("Juice", "ジュース")
 ]
 
-# 単語と意味を切り替える関数
-def toggle_word_meaning(button, word):
-    if button.description == word["word"]:
-        button.description = word["meaning"]
-    else:
-        button.description = word["word"]
+# 単語と意味を表示するためのラベル
+class Flashcard:
+    def __init__(self, master, word, meaning):
+        self.frame = tk.Frame(master)
+        self.frame.pack(pady=10)
+        self.label = tk.Label(self.frame, text=word, font=("Arial", 24), width=10, height=2)
+        self.label.pack()
+        self.word = word
+        self.meaning = meaning
+        self.showing_word = True
+        self.label.bind("<Button-1>", self.flip)
 
-# 単語を覚えたとマークする関数
-def mark_as_learned(word):
-    word["learned"] = True
-    display_all()
+    def flip(self, event):
+        if self.showing_word:
+            self.label.config(text=self.meaning)
+        else:
+            self.label.config(text=self.word)
+        self.showing_word = not self.showing_word
 
-# 単語帳の表示（タップで意味を表示）
-def display_words(word_list):
-    for word in word_list:
-        if not word["learned"]:
-            word_button = widgets.Button(description=word["word"])
-            word_button.on_click(lambda b, wd=word: toggle_word_meaning(b, wd))
-            display(word_button)
-            learned_button = widgets.Button(description="Mark as learned")
-            learned_button.on_click(lambda b, wd=word: mark_as_learned(wd))
-            display(learned_button)
+# シャッフル機能
+def shuffle():
+    random.shuffle(flashcards)
+    for flashcard in flashcards:
+        flashcard.frame.pack_forget()
+        flashcard.frame.pack(pady=10)
 
-# アルファベット順に並び替え
-def sort_alphabetically():
-    words_sorted = sorted(words, key=lambda x: x["word"])
-    display_all(words_sorted)
+# アプリのメインウィンドウ
+root = tk.Tk()
+root.title("単語アプリ")
 
-# ランダム順に並び替え
-def sort_randomly():
-    words_sorted = random.sample(words, len(words))
-    display_all(words_sorted)
+flashcards = [Flashcard(root, word, meaning) for word, meaning in words]
 
-# 単語帳の表示
-def display_all(word_list=words):
-    display(widgets.HTML("<h2>Word List</h2>"))
-    display_words(word_list)
-    display(sort_alpha_button)
-    display(sort_random_button)
+shuffle_button = tk.Button(root, text="シャッフル", command=shuffle)
+shuffle_button.pack(pady=20)
 
-# 並び替えボタン
-sort_alpha_button = widgets.Button(description="Sort Alphabetically")
-sort_alpha_button.on_click(lambda b: sort_alphabetically())
-
-sort_random_button = widgets.Button(description="Sort Randomly")
-sort_random_button.on_click(lambda b: sort_randomly())
-
-# 初期表示
-display_all()
+root.mainloop()
